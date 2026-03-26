@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Accueil - Images de chiens</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- 🌐 Barre de navigation -->
+  <nav class="navbar">
+    <div class="nav-logo">🐾 DogApp</div>
+    <ul class="nav-links">
+      <li><a href="index.html" class="active">Accueil</a></li>
+      <li><a href="races.html">Races</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <h1>🐶 Bienvenue sur la page des chiens</h1>
+    
+    <!-- Loader -->
+    <div id="loader" class="loader hidden"></div>
+
+    <!-- Message d’erreur -->
+    <div id="errorMessage" class="error hidden">❌ Impossible de charger l’image. Veuillez réessayer.</div>
+
+    <!-- Image du chien -->
+    <img id="dogImage" src="" alt="photo chien" class="hidden fade-in">
+
+    <br>
+    <button id="generateButton">Générer une nouvelle image</button>
+  </main>
+
+  <script>
+    const img = document.getElementById("dogImage");
+    const loader = document.getElementById("loader");
+    const errorMessage = document.getElementById("errorMessage");
+
+    function toggleLoader(show) {
+      if (show) {
+        loader.classList.remove("hidden");
+        img.classList.add("hidden");
+      } else {
+        loader.classList.add("hidden");
+        img.classList.remove("hidden");
+      }
+    }
+
+    function toggleError(show, message = "") {
+      if (show) {
+        errorMessage.textContent = message;
+        errorMessage.classList.remove("hidden");
+      } else {
+        errorMessage.classList.add("hidden");
+      }
+    }
+
+    async function fetchRandomDog() {
+      try {
+        toggleError(false);
+        toggleLoader(true);
+        const response = await fetch("https://dog.ceo/api/breed/hound/images/random");
+        if (!response.ok) throw new Error("Erreur API");
+        const data = await response.json();
+
+        img.classList.remove("fade-in-active");
+        img.src = data.message;
+        img.alt = "photo chien";
+        img.onload = () => img.classList.add("fade-in-active");
+      } catch (error) {
+        console.error("Erreur :", error);
+        toggleError(true, "❌ Erreur de chargement. Vérifiez votre connexion ou réessayez.");
+      } finally {
+        setTimeout(() => toggleLoader(false), 400);
+      }
+    }
+
+    fetchRandomDog();
+    document.getElementById("generateButton").addEventListener("click", fetchRandomDog);
+  </script>
+
+</body>
+</html>

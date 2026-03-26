@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Races de chiens</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <h1>🐾 Découvrez les races de chiens</h1>
+
+  <select id="breedSelect">
+    <option value="">-- Choisissez une race --</option>
+    <option value="beagle">Beagle</option>
+    <option value="bulldog/english">Bulldog anglais</option>
+    <option value="bulldog/french">Bouledogue français</option>
+    <option value="dalmatian">Dalmatien</option>
+    <option value="husky">Husky</option>
+    <option value="labrador">Labrador</option>
+    <option value="pug">Carlin</option>
+    <option value="retriever/golden">Golden Retriever</option>
+  </select>
+
+  <!-- Loader -->
+  <div id="loader" class="loader hidden"></div>
+
+  <!-- Message d’erreur -->
+  <div id="errorMessage" class="error hidden">❌ Aucune image trouvée pour cette race.</div>
+
+  <div id="dogsContainer"></div>
+
+  <p>
+    <a href="index.html">🏠 Retour à l’accueil</a>
+  </p>
+
+  <script>
+    const breedSelect = document.getElementById("breedSelect");
+    const dogsContainer = document.getElementById("dogsContainer");
+    const loader = document.getElementById("loader");
+    const errorMessage = document.getElementById("errorMessage");
+
+    function toggleLoader(show) {
+      if (show) {
+        loader.classList.remove("hidden");
+        dogsContainer.classList.add("hidden");
+      } else {
+        loader.classList.add("hidden");
+        dogsContainer.classList.remove("hidden");
+      }
+    }
+
+    function toggleError(show, message = "") {
+      if (show) {
+        errorMessage.textContent = message;
+        errorMessage.classList.remove("hidden");
+      } else {
+        errorMessage.classList.add("hidden");
+      }
+    }
+
+    // Fonction pour afficher les images
+    function displayDogs(dogs) {
+      dogsContainer.innerHTML = "";
+      dogs.forEach(dogUrl => {
+        const img = document.createElement("img");
+        img.src = dogUrl;
+        img.alt = "photo chien";
+        dogsContainer.appendChild(img);
+      });
+    }
+
+    // Fonction principale pour récupérer les images selon la race
+    async function fetchBreedImages(race) {
+      if (!race) return;
+      try {
+        toggleError(false);
+        toggleLoader(true);
+        const response = await fetch(`https://dog.ceo/api/breed/${race}/images/random/12`);
+        if (!response.ok) throw new Error("Erreur API");
+        const data = await response.json();
+
+        if (!data.message || data.message.length === 0) {
+          throw new Error("Aucune image trouvée");
+        }
+
+        displayDogs(data.message);
+      } catch (error) {
+        console.error("Erreur :", error);
+        toggleError(true, "❌ Impossible de charger les images. Vérifiez la race ou réessayez.");
+      } finally {
+        setTimeout(() => toggleLoader(false), 500);
+      }
+    }
+
+    breedSelect.addEventListener("input", (event) => {
+      const selectedRace = event.target.selectedOptions[0].value;
+      fetchBreedImages(selectedRace);
+    });
+  </script>
+
+</body>
+</html>
